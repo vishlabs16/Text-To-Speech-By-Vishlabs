@@ -9,6 +9,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.ads.AdRequest
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -19,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -33,6 +37,7 @@ import com.google.android.gms.ads.AdView
 import com.rach.texttospeechbyvishlabs.component.AdvancedTTSManager
 import com.rach.texttospeechbyvishlabs.component.BottomNavBar
 import com.rach.texttospeechbyvishlabs.ui.theme.HabitChangeTheme
+import com.rach.texttospeechbyvishlabs.ui.theme.SettingsScreen
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -63,6 +68,9 @@ fun AdvancedTTSScreen() {
     val scope = rememberCoroutineScope()
     var currentScreen by remember { mutableStateOf(DrawerScreen.HOME) }
     var backPressedTime by remember { mutableStateOf(0L) }
+    var selectedLanguageIndex by rememberSaveable { mutableStateOf(0) }
+    var selectedCategoryName by rememberSaveable { mutableStateOf(VoiceCategory.NATURAL.name) }
+
     BackHandler {
         if (currentScreen != DrawerScreen.HOME) {
 
@@ -147,13 +155,7 @@ fun AdvancedTTSScreen() {
                                 )
                             }
                             4 -> {
-                                scope.launch {
-                                    if (drawerState.isOpen) {
-                                        drawerState.close()
-                                    } else {
-                                        drawerState.open()
-                                    }
-                                }
+                                currentScreen = DrawerScreen.SETTINGS
                             }
                         }
                     }
@@ -170,16 +172,27 @@ fun AdvancedTTSScreen() {
                 DrawerScreen.LANGUAGE_SETTINGS -> LanguageSettingsScreen(
                     paddingValues = paddingValues,
                     ttsManager = ttsManager,
-                    onBackClick = { currentScreen = DrawerScreen.HOME }
+                    selectedLanguageIndex = selectedLanguageIndex,
+                    onLanguageSelected = { index ->
+                        selectedLanguageIndex = index
+                    },
+                    onBackClick = { currentScreen = DrawerScreen.SETTINGS }
                 )
+
+
                 DrawerScreen.VOICE_CATEGORY -> VoiceCategoryScreen(
                     paddingValues = paddingValues,
                     ttsManager = ttsManager,
-                    onBackClick = { currentScreen = DrawerScreen.HOME }
+                    selectedCategoryName = selectedCategoryName,
+                    onCategorySelected = { name ->
+                        selectedCategoryName = name
+                    },
+                    onBackClick = { currentScreen = DrawerScreen.SETTINGS }
                 )
+
                 DrawerScreen.ABOUT_US -> AboutUsScreen(paddingValues = paddingValues, onBackClick = {
-                    currentScreen = DrawerScreen.HOME})
-                DrawerScreen.PRIVACY_POLICY -> PrivacyPolicyScreen(paddingValues = paddingValues, onBackClick = {currentScreen = DrawerScreen.HOME})
+                    currentScreen = DrawerScreen.SETTINGS})
+                DrawerScreen.PRIVACY_POLICY -> PrivacyPolicyScreen(paddingValues = paddingValues, onBackClick = {currentScreen = DrawerScreen.SETTINGS})
                 //  DrawerScreen.PROFILE -> ProfileScreen(paddingValues = paddingValues)
                 DrawerScreen.LOGOUT -> {
                     LaunchedEffect(Unit) {
@@ -187,6 +200,16 @@ fun AdvancedTTSScreen() {
                         currentScreen = DrawerScreen.HOME
                     }
                 }
+
+                DrawerScreen.SETTINGS -> SettingsScreen(
+                    paddingValues = paddingValues,
+                    onBackClick = { currentScreen = DrawerScreen.HOME },
+                    onNavigateToLanguage = { currentScreen = DrawerScreen.LANGUAGE_SETTINGS },
+                    onNavigateToVoice = { currentScreen = DrawerScreen.VOICE_CATEGORY },
+                    onNavigateToAbout = { currentScreen = DrawerScreen.ABOUT_US },
+                    onNavigateToPrivacy = { currentScreen = DrawerScreen.PRIVACY_POLICY }
+                )
+
             }
         }
     }
@@ -199,6 +222,8 @@ enum class DrawerScreen(val title: String, val icon: ImageVector) {
     ABOUT_US("About Us", Icons.Default.Info),
     PRIVACY_POLICY("Privacy Policy", Icons.Default.Lock),
     //  PROFILE("Profile", Icons.Default.Person),
+
+    SETTINGS("Settings", Icons.Default.Settings),
     LOGOUT("Home", Icons.Default.Home)
 }
 
@@ -329,53 +354,54 @@ fun HomeScreen(
 fun LanguageSettingsScreen(
     paddingValues: PaddingValues,
     ttsManager: AdvancedTTSManager,
+    selectedLanguageIndex: Int,
+    onLanguageSelected: (Int) -> Unit,
     onBackClick: () -> Unit
 ) {
-    var selectedLanguage by remember { mutableStateOf(languageOptions.first()) }
-    var languageExpanded by remember { mutableStateOf(false) }
-
-    Column(modifier = Modifier.fillMaxSize()) {
-
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+    ) {
         BackTopBar(
             title = "Language Settings",
             onBackClick = onBackClick
         )
 
-        Column(
+        LazyColumn(
             modifier = Modifier
-                .fillMaxSize()
+                .weight(1f)
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("Language", style = MaterialTheme.typography.titleMedium)
+            item {
+                Text("Choose Language", style = MaterialTheme.typography.titleMedium)
+                Divider()
+            }
 
-            ExposedDropdownMenuBox(
-                expanded = languageExpanded,
-                onExpandedChange = { languageExpanded = !languageExpanded }
-            ) {
-                OutlinedTextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .menuAnchor(),
-                    readOnly = true,
-                    value = selectedLanguage.first,
-                    onValueChange = {},
-                    label = { Text("Select Language") },
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = languageExpanded)
-                    }
-                )
+            itemsIndexed(languageOptions) { index, option ->
+                val isSelected = index == selectedLanguageIndex
 
-                ExposedDropdownMenu(
-                    expanded = languageExpanded,
-                    onDismissRequest = { languageExpanded = false }
+                ElevatedCard(
+                    onClick = {
+                        onLanguageSelected(index)
+                        ttsManager.setVoiceLanguage(option.second)
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
-                    languageOptions.forEach { option ->
-                        DropdownMenuItem(
-                            text = { Text(option.first) },
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(option.first)
+                        RadioButton(
+                            selected = isSelected,
                             onClick = {
-                                selectedLanguage = option
-                                languageExpanded = false
+                                onLanguageSelected(index)
                                 ttsManager.setVoiceLanguage(option.second)
                             }
                         )
@@ -388,58 +414,65 @@ fun LanguageSettingsScreen(
 
 
 
+
+
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VoiceCategoryScreen(
     paddingValues: PaddingValues,
     ttsManager: AdvancedTTSManager,
+    selectedCategoryName: String,
+    onCategorySelected: (String) -> Unit,
     onBackClick: () -> Unit
 ) {
-    var selectedCategory by remember { mutableStateOf(VoiceCategory.NATURAL) }
-    var categoryExpanded by remember { mutableStateOf(false) }
+    val selectedCategory = VoiceCategory.valueOf(selectedCategoryName)
 
-    Column(modifier = Modifier.fillMaxSize()) {
-
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+    ) {
         BackTopBar(
             title = "Voice Category",
             onBackClick = onBackClick
         )
 
-        Column(
+        LazyColumn(
             modifier = Modifier
-                .fillMaxSize()
+                .weight(1f)
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("Voice Category", style = MaterialTheme.typography.titleMedium)
+            item {
+                Text("Choose Voice Style", style = MaterialTheme.typography.titleMedium)
+                Divider()
+            }
 
-            ExposedDropdownMenuBox(
-                expanded = categoryExpanded,
-                onExpandedChange = { categoryExpanded = !categoryExpanded }
-            ) {
-                OutlinedTextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .menuAnchor(),
-                    readOnly = true,
-                    value = selectedCategory.name,
-                    onValueChange = {},
-                    label = { Text("Select Voice Category") },
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded)
-                    }
-                )
+            items(VoiceCategory.values()) { category ->
+                val isSelected = category == selectedCategory
 
-                ExposedDropdownMenu(
-                    expanded = categoryExpanded,
-                    onDismissRequest = { categoryExpanded = false }
+                ElevatedCard(
+                    onClick = {
+                        onCategorySelected(category.name)
+                        ttsManager.applyVoiceCategory(category)
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
-                    VoiceCategory.values().forEach { category ->
-                        DropdownMenuItem(
-                            text = { Text(category.name) },
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(category.name)
+                        RadioButton(
+                            selected = isSelected,
                             onClick = {
-                                selectedCategory = category
-                                categoryExpanded = false
+                                onCategorySelected(category.name)
                                 ttsManager.applyVoiceCategory(category)
                             }
                         )
@@ -449,6 +482,9 @@ fun VoiceCategoryScreen(
         }
     }
 }
+
+
+
 
 
 @Composable
@@ -590,6 +626,8 @@ val languageOptions = listOf(
     "English (US)" to Locale.US,
     "English (UK)" to Locale.UK,
     "Hindi" to Locale("hi", "IN"),
+    "Tamil" to Locale("ta", "IN"),
+    "Malayalam" to Locale("ml", "IN"),
     "French" to Locale.FRANCE,
     "German" to Locale.GERMANY,
     "Spanish" to Locale("es", "ES")

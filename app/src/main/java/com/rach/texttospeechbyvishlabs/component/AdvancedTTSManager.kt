@@ -56,7 +56,7 @@ class AdvancedTTSManager(
             }
 
             VoiceCategory.MALE -> {
-                setPitch(0.9f)
+                setPitch(0.75f)
                 setSpeechRate(0.9f)
             }
 
