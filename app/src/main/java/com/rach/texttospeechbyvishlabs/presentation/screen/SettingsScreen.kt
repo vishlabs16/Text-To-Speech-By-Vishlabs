@@ -11,8 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
-import android.content.Intent
 import androidx.compose.ui.unit.dp
 import com.rach.texttospeechbyvishlabs.BackTopBar
 
@@ -21,12 +19,10 @@ fun SettingsScreen(
     paddingValues: PaddingValues,
     onBackClick: () -> Unit,
     onNavigateToLanguage: () -> Unit,
-    onNavigateToVoice: () -> Unit,
+    onNavigateToInbuiltVoices: () -> Unit,
     onNavigateToAbout: () -> Unit,
     onNavigateToPrivacy: () -> Unit
 ) {
-    val context = LocalContext.current
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -42,29 +38,12 @@ fun SettingsScreen(
             item {
                 SettingsItemCard(Icons.Outlined.Translate, "Language Settings", onNavigateToLanguage)
             }
-            item {
-                SettingsItemCard(Icons.Outlined.VolumeUp, "Voice Category", onNavigateToVoice)
-            }
-
-            item {
-                SettingsItemCard(
-                    Icons.Outlined.Share,
-                    "Share App"
-                ) {
-                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                        type = "text/plain"
-                        putExtra(
-                            Intent.EXTRA_TEXT,
-                            "Check out this app:\nhttps://play.google.com/store/apps/details?id=${context.packageName}"
-                        )
-                    }
-                    context.startActivity(
-                        Intent.createChooser(shareIntent, "Share app via")
-                    )
-                }
-            }
+            item { SettingsItemCard(Icons.Outlined.RecordVoiceOver, "Inbuilt Voices", onNavigateToInbuiltVoices) }
 
 
+//            item {
+//                SettingsItemCard(Icons.Outlined.VolumeUp, "Voice Category", onNavigateToVoice)
+//            }
             item {
                 SettingsItemCard(Icons.Outlined.Info, "About", onNavigateToAbout)
             }

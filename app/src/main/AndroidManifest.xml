@@ -11,7 +11,6 @@
 
 
     <application
-        android:name=".TextToSpeechApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -34,7 +33,7 @@
 
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-2441322063617280~4447613443"/>
+            android:value="ca-app-pub-3940256099942544~3347511713"/>
     </application>
 
 </manifest>

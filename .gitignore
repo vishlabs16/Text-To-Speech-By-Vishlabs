@@ -10,7 +10,6 @@
 /.idea/assetWizardSettings.xml
 .DS_Store
 /build
-.kotlin/git add
 /captures
 .externalNativeBuild
 .cxx

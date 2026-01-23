@@ -69,7 +69,7 @@ fun AboutUsScreen(
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Email: statusb130@gmail.com")
+                    Text("Email: support@vishlabs.com")
                     Text("Website: www.vishlabs.com")
                 }
             }
