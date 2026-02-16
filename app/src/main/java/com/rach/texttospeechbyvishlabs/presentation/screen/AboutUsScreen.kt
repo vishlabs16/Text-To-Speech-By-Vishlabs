@@ -50,7 +50,7 @@ fun AboutUsScreen(
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Version 1.0.0")
+                    Text("Version 3.0.0")
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         "We are dedicated to providing the best text-to-speech experience with high-quality voices and advanced features."
@@ -70,7 +70,6 @@ fun AboutUsScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text("Email: statusb130@gmail.com")
-                    Text("Website: www.vishlabs.com")
                 }
             }
         }
