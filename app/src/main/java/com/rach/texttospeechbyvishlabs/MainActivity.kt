@@ -369,7 +369,7 @@ fun AdvancedTTSScreen() {
                     onTextChange = { text = it },
                     speakingIndex = speakingIndex,
                     isPlaying = isPlaying,
-                    onPlayPause = { viewModel.togglePlayPause(text) },
+                    onPlayPause = { vm.speak(text) },
                     onNext = { viewModel.playNext(text) },
                     onPrevious = { viewModel.playPrevious(text) }
                 )
