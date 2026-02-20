@@ -250,9 +250,5 @@ class AdvancedTTSManager(
     }
 
     fun stop() = tts.stop()
-
-    fun shutdown() {
-        tts.stop()
-        tts.shutdown()
-    }
+    
 }
